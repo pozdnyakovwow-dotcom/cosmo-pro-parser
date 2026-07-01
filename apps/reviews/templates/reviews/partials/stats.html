@@ -1,0 +1,61 @@
+<div class="panel">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:16px;">
+        <div>
+            <h2 class="section-title" style="margin-bottom:4px;">Сводка</h2>
+            <div style="color:#6b7280; font-size:13px;">Обновлено: {{ generated_at|date:"d.m.Y H:i:s" }}</div>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            {% for fmt, export in export_files.items %}
+                {% if export.exists %}
+                    <a href="{% url 'reviews:download_export' fmt %}" style="text-decoration:none; padding:10px 12px; border:1px solid #dbe2ea; border-radius:10px; background:#fff;">
+                        Скачать {{ fmt|upper }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(8, minmax(0, 1fr)); gap:12px;">
+        <div class="card" style="padding:14px;"><div style="color:#6b7280; font-size:12px;">Врачи</div><div style="font-size:28px; font-weight:700;">{{ doctors_count }}</div></div>
+        <div class="card" style="padding:14px;"><div style="color:#6b7280; font-size:12px;">Сайты</div><div style="font-size:28px; font-weight:700;">{{ sites_count }}</div></div>
+        <div class="card" style="padding:14px;"><div style="color:#6b7280; font-size:12px;">Ссылки</div><div style="font-size:28px; font-weight:700;">{{ sources_count }}</div></div>
+        <div class="card" style="padding:14px;"><div style="color:#6b7280; font-size:12px;">Отзывы</div><div style="font-size:28px; font-weight:700;">{{ reviews_count }}</div></div>
+        <div class="card" style="padding:14px;"><div style="color:#6b7280; font-size:12px;">OK</div><div style="font-size:28px; font-weight:700; color:#047857;">{{ ok_sources_count }}</div></div>
+        <div class="card" style="padding:14px;"><div style="color:#6b7280; font-size:12px;">Blocked</div><div style="font-size:28px; font-weight:700; color:#b45309;">{{ blocked_sources_count }}</div></div>
+        <div class="card" style="padding:14px;"><div style="color:#6b7280; font-size:12px;">Failed</div><div style="font-size:28px; font-weight:700; color:#b91c1c;">{{ failed_sources_count }}</div></div>
+        <div class="card" style="padding:14px;"><div style="color:#6b7280; font-size:12px;">Blocked для дообработки</div><div style="font-size:28px; font-weight:700; color:#7c3aed;">{{ manual_blocked_sources_count }}</div></div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:12px; margin-top:14px;">
+        <div class="card" style="padding:14px;">
+            <div style="font-size:12px; color:#6b7280;">Активный запуск</div>
+            <div style="font-weight:600; margin-top:6px;">
+                {% if active_job %}
+                    #{{ active_job.id }} · {{ active_job.get_status_display }}
+                {% else %}
+                    Нет активного запуска
+                {% endif %}
+            </div>
+        </div>
+        <div class="card" style="padding:14px;">
+            <div style="font-size:12px; color:#6b7280;">Последний запуск</div>
+            <div style="font-weight:600; margin-top:6px;">
+                {% if last_job %}
+                    #{{ last_job.id }} · {{ last_job.get_status_display }} · {{ last_job.created_at|date:"d.m H:i" }}
+                {% else %}
+                    Еще не запускался
+                {% endif %}
+            </div>
+        </div>
+        <div class="card" style="padding:14px;">
+            <div style="font-size:12px; color:#6b7280;">Последний экспорт</div>
+            <div style="font-weight:600; margin-top:6px;">
+                {% if export_files.csv.exists %}
+                    CSV · {{ export_files.csv.modified_at|date:"d.m H:i" }}
+                {% else %}
+                    Экспорт пока не создан
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

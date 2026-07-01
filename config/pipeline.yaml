@@ -1,0 +1,61 @@
+project:
+  docs_dir: /Users/imac/Desktop/trae/docs
+  export_dir: /Users/imac/Desktop/trae/parser_classified/data/exports
+  raw_dir: /Users/imac/Desktop/trae/parser_classified/data/raw
+  export_format: csv
+  async_enabled: true
+  include_doctors_without_reviews: true
+network:
+  request_timeout_seconds: 25
+  retries: 3
+  retry_backoff_seconds: 2
+  rate_limit_seconds: 1.5
+browser:
+  enabled: true
+  headless: true
+  assisted_mode: false
+  page_load_timeout_seconds: 45
+  wait_after_load_seconds: 4
+  interaction_timeout_seconds: 180
+  interaction_poll_seconds: 2
+  window_width: 1440
+  window_height: 2200
+  chrome_binary_path: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+  user_data_dir: /Users/imac/Desktop/trae/parser_classified/data/chrome_profile
+  force_for_blocked_sources: true
+sources:
+  docdoc:
+    enabled: true
+    use_browser_fallback: true
+    manual_browser_assist: true
+    file_patterns:
+      - "*DocDoc*.csv"
+  doctu:
+    enabled: true
+    use_browser_fallback: true
+    manual_browser_assist: true
+    file_patterns:
+      - "*Докту*.csv"
+  napopravku:
+    enabled: true
+    use_browser_fallback: true
+    manual_browser_assist: false
+    file_patterns:
+      - "*НаПоправку*.csv"
+  prodoctorov:
+    enabled: true
+    use_browser_fallback: false
+    manual_browser_assist: false
+    file_patterns:
+      - "*Апрель 2026*.csv"
+export:
+  csv_name: doctor_reviews_export.csv
+  json_name: doctor_reviews_export.json
+  columns:
+    - clinic
+    - doctor
+    - source_site
+    - doctor_profile_url
+    - review_text
+    - review_published_at
+    - review_rating

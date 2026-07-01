@@ -1,0 +1,55 @@
+<div class="panel">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:14px;">
+        <h2 class="section-title" style="margin:0;">Состояние ссылок</h2>
+        <div style="color:#6b7280; font-size:13px;">Последние 25 ссылок по времени обновления</div>
+    </div>
+    <div class="table-wrap">
+        <table style="width:100%; border-collapse:collapse; font-size:14px;">
+            <thead>
+                <tr style="text-align:left; color:#6b7280;">
+                    <th style="padding:10px 8px;">Врач</th>
+                    <th style="padding:10px 8px;">Сайт</th>
+                    <th style="padding:10px 8px;">Клиника</th>
+                    <th style="padding:10px 8px;">Статус</th>
+                    <th style="padding:10px 8px;">Отзывы</th>
+                    <th style="padding:10px 8px;">Проверен</th>
+                    <th style="padding:10px 8px;">Ссылка</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for source in sources %}
+                    <tr style="border-top:1px solid #e5e7eb;">
+                        <td style="padding:10px 8px;">{{ source.doctor.full_name }}</td>
+                        <td style="padding:10px 8px;">{% if source.site %}{{ source.site.name }}{% else %}{{ source.source_site }}{% endif %}</td>
+                        <td style="padding:10px 8px;">{% if source.clinic %}{{ source.clinic.name }}{% else %}-{% endif %}</td>
+                        <td style="padding:10px 8px;">
+                            <span style="padding:4px 8px; border-radius:999px; background:
+                                {% if source.last_status == 'ok' %}#dcfce7
+                                {% elif source.last_status == 'blocked' %}#fef3c7
+                                {% elif source.last_status == 'failed' %}#fee2e2
+                                {% else %}#f3f4f6{% endif %};">
+                                {{ source.last_status|default:"pending" }}
+                            </span>
+                        </td>
+                        <td style="padding:10px 8px;">{{ source.last_reviews_count }}</td>
+                        <td style="padding:10px 8px;">{% if source.last_checked_at %}{{ source.last_checked_at|date:"d.m H:i:s" }}{% else %}-{% endif %}</td>
+                        <td style="padding:10px 8px; max-width:320px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                            <a href="{{ source.profile_url }}" target="_blank" rel="noreferrer">{{ source.profile_url }}</a>
+                        </td>
+                    </tr>
+                    {% if source.last_error %}
+                        <tr style="border-top:1px dashed #f3f4f6;">
+                            <td colspan="7" style="padding:8px; color:#991b1b; font-size:13px;">
+                                Ошибка: {{ source.last_error }}
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% empty %}
+                    <tr>
+                        <td colspan="7" style="padding:12px 8px; color:#6b7280;">Источники пока не загружены.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Панель парсера</title>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f5f7fb;
+            --surface: #ffffff;
+            --border: #dbe2ea;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --primary: #2563eb;
+            --danger: #b91c1c;
+            --warn: #b45309;
+            --ok: #047857;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        .wrap {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+        .title h1 {
+            margin: 0 0 6px;
+            font-size: 32px;
+        }
+        .title p {
+            margin: 0;
+            color: var(--muted);
+        }
+        .panel, .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+        }
+        .panel {
+            padding: 20px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            gap: 20px;
+        }
+        .span-4 { grid-column: span 4; }
+        .span-5 { grid-column: span 5; }
+        .span-7 { grid-column: span 7; }
+        .span-8 { grid-column: span 8; }
+        .span-12 { grid-column: span 12; }
+        form .row {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 1fr 1fr;
+            gap: 12px;
+            align-items: end;
+        }
+        label {
+            display: block;
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+        select, button {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            padding: 11px 12px;
+            font-size: 14px;
+            background: #fff;
+        }
+        .checks {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-bottom: 4px;
+        }
+        .checks label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+            color: var(--text);
+        }
+        button {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .section-title {
+            margin: 0 0 14px;
+            font-size: 18px;
+        }
+        .hint {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 10px;
+        }
+        .table-wrap {
+            overflow-x: auto;
+        }
+        @media (max-width: 1080px) {
+            .span-4, .span-5, .span-7, .span-8, .span-12 { grid-column: span 12; }
+            form .row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="topbar">
+            <div class="title">
+                <h1>Панель парсера</h1>
+                <p>Управление сбором отзывов, live-статусы задач и контроль проблемных ссылок через HTMX.</p>
+            </div>
+            <div>
+                <a href="{% url 'admin:index' %}">Админка</a>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="panel span-12">
+                <h2 class="section-title">Запуск пайплайна</h2>
+                <form
+                    hx-post="{% url 'reviews:run' %}"
+                    hx-target="#active-job-panel"
+                    hx-swap="innerHTML"
+                >
+                    {% csrf_token %}
+                    <input type="hidden" name="scope" value="all">
+                    <div class="row">
+                        <div>
+                            <label for="mode">Режим</label>
+                            <select name="mode" id="mode">
+                                <option value="sync">sync</option>
+                                <option value="async">async</option>
+                            </select>
+                        </div>
+                        <div class="checks">
+                            <label><input type="checkbox" name="skip_fetch"> Только обновить базу и экспорт</label>
+                            <label><input type="checkbox" name="browser_assisted"> Browser-assisted для blocked сайтов</label>
+                        </div>
+                        <div class="hint">
+                            `browser-assisted` запускает видимый Chrome и подходит для `DocDoc` и `Doctu`, когда нужна ручная локальная проверка страницы.
+                        </div>
+                        <div>
+                            <button type="submit">Запустить</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div
+                id="stats-panel"
+                class="span-12"
+                hx-get="{% url 'reviews:stats_partial' %}"
+                hx-trigger="load, every 10s, refresh-dashboard from:body"
+                hx-swap="innerHTML"
+            ></div>
+
+            <div
+                id="active-job-panel"
+                class="span-5"
+                hx-get="{% url 'reviews:active_job_partial' %}"
+                hx-trigger="load, every 3s, refresh-dashboard from:body"
+                hx-swap="innerHTML"
+            ></div>
+
+            <div
+                id="recent-jobs-panel"
+                class="span-7"
+                hx-get="{% url 'reviews:recent_jobs_partial' %}"
+                hx-trigger="load, every 6s, refresh-dashboard from:body"
+                hx-swap="innerHTML"
+            ></div>
+
+            <div
+                id="blocked-queue-panel"
+                class="span-12"
+                hx-get="{% url 'reviews:blocked_queue_partial' %}"
+                hx-trigger="load, every 8s, refresh-dashboard from:body"
+                hx-swap="innerHTML"
+            ></div>
+
+            <div
+                id="source-health-panel"
+                class="span-12"
+                hx-get="{% url 'reviews:source_health_partial' %}"
+                hx-trigger="load, every 12s, refresh-dashboard from:body"
+                hx-swap="innerHTML"
+            ></div>
+        </div>
+    </div>
+</body>
+</html>

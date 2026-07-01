@@ -1,0 +1,42 @@
+<div class="panel">
+    <h2 class="section-title">Последние запуски</h2>
+    <div class="table-wrap">
+        <table style="width:100%; border-collapse:collapse; font-size:14px;">
+            <thead>
+                <tr style="text-align:left; color:#6b7280;">
+                    <th style="padding:10px 8px;">ID</th>
+                    <th style="padding:10px 8px;">Статус</th>
+                    <th style="padding:10px 8px;">Область</th>
+                    <th style="padding:10px 8px;">Режим</th>
+                    <th style="padding:10px 8px;">Опции</th>
+                    <th style="padding:10px 8px;">Прогресс</th>
+                    <th style="padding:10px 8px;">Создан</th>
+                    <th style="padding:10px 8px;">Финиш</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for job in jobs %}
+                    <tr style="border-top:1px solid #e5e7eb;">
+                        <td style="padding:10px 8px;">#{{ job.id }}</td>
+                        <td style="padding:10px 8px;">{{ job.get_status_display }}</td>
+                        <td style="padding:10px 8px;">{{ job.get_scope_display }}</td>
+                        <td style="padding:10px 8px;">{{ job.mode }}</td>
+                        <td style="padding:10px 8px;">
+                            {% if job.skip_fetch %}skip-fetch{% endif %}
+                            {% if job.skip_fetch and job.browser_assisted %} · {% endif %}
+                            {% if job.browser_assisted %}browser-assisted{% endif %}
+                            {% if not job.skip_fetch and not job.browser_assisted %}-{% endif %}
+                        </td>
+                        <td style="padding:10px 8px;">{{ job.processed_sources }}/{{ job.total_sources }}</td>
+                        <td style="padding:10px 8px;">{{ job.created_at|date:"d.m H:i:s" }}</td>
+                        <td style="padding:10px 8px;">{% if job.finished_at %}{{ job.finished_at|date:"d.m H:i:s" }}{% else %}-{% endif %}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" style="padding:12px 8px; color:#6b7280;">История запусков пока пуста.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

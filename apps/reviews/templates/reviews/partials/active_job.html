@@ -1,0 +1,101 @@
+<div class="panel">
+    <h2 class="section-title">Активная задача</h2>
+
+    {% if message %}
+        <div style="margin-bottom:12px; padding:10px 12px; border-radius:10px; background:#eff6ff; border:1px solid #bfdbfe;">
+            {{ message }}
+        </div>
+    {% endif %}
+
+    {% if job %}
+        <div class="card" style="padding:16px;">
+            <div style="display:flex; justify-content:space-between; gap:12px; align-items:center;">
+                <strong>Запуск #{{ job.id }}</strong>
+                <span style="padding:4px 8px; border-radius:999px; background:
+                    {% if job.status == 'completed' %}#dcfce7
+                    {% elif job.status == 'failed' %}#fee2e2
+                    {% elif job.status == 'running' %}#dbeafe
+                    {% else %}#f3f4f6{% endif %};">
+                    {{ job.get_status_display }}
+                </span>
+            </div>
+            <div style="margin-top:10px; color:#6b7280; font-size:14px;">
+                Режим: {{ job.mode }}<br>
+                Область: {{ job.get_scope_display }}<br>
+                Fetch: {% if job.skip_fetch %}пропущен{% else %}включен{% endif %}<br>
+                Browser-assisted: {% if job.browser_assisted %}да{% else %}нет{% endif %}
+            </div>
+            <div style="margin-top:10px; font-size:14px;">
+                Создан: {{ job.created_at|date:"d.m.Y H:i:s" }}<br>
+                Старт: {% if job.started_at %}{{ job.started_at|date:"d.m.Y H:i:s" }}{% else %}-{% endif %}<br>
+                Финиш: {% if job.finished_at %}{{ job.finished_at|date:"d.m.Y H:i:s" }}{% else %}-{% endif %}
+            </div>
+
+            <div style="margin-top:14px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:13px; color:#6b7280;">
+                    <span>{{ job.current_stage|default:"Ожидание" }}</span>
+                    <span>{{ job.processed_sources }} / {{ job.total_sources }}</span>
+                </div>
+                <div style="height:10px; background:#e5e7eb; border-radius:999px; overflow:hidden;">
+                    <div style="height:10px; background:#2563eb; width:{% if job.total_sources %}{% widthratio job.processed_sources job.total_sources 100 %}{% else %}0{% endif %}%;"></div>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:10px; margin-top:14px; font-size:13px;">
+                <div class="card" style="padding:10px;"><div style="color:#6b7280;">OK</div><div style="font-weight:700; color:#047857;">{{ job.success_sources }}</div></div>
+                <div class="card" style="padding:10px;"><div style="color:#6b7280;">Blocked</div><div style="font-weight:700; color:#b45309;">{{ job.blocked_sources }}</div></div>
+                <div class="card" style="padding:10px;"><div style="color:#6b7280;">Failed</div><div style="font-weight:700; color:#b91c1c;">{{ job.failed_sources }}</div></div>
+                <div class="card" style="padding:10px;"><div style="color:#6b7280;">Всего</div><div style="font-weight:700;">{{ job.total_sources }}</div></div>
+            </div>
+
+            {% if job.current_doctor_name or job.current_source_site or job.current_profile_url %}
+                <div style="margin-top:14px; padding:12px; border-radius:10px; background:#f8fafc; border:1px solid #e5e7eb; font-size:14px;">
+                    <strong>Текущая ссылка</strong><br>
+                    Врач: {{ job.current_doctor_name|default:"-" }}<br>
+                    Сайт: {{ job.current_source_site|default:"-" }}<br>
+                    URL: {% if job.current_profile_url %}<a href="{{ job.current_profile_url }}" target="_blank" rel="noreferrer">{{ job.current_profile_url }}</a>{% else %}-{% endif %}
+                </div>
+            {% endif %}
+
+            {% if job.summary %}
+                <div style="margin-top:14px; padding-top:12px; border-top:1px solid #e5e7eb; font-size:14px;">
+                    <strong>Итог</strong><br>
+                    Врачей: {{ job.summary.doctors|default:"0" }}<br>
+                    Ссылок: {{ job.summary.sources|default:"0" }}<br>
+                    Обработано: {{ job.summary.fetched|default:"0" }}<br>
+                    В очереди blocked: {{ job.summary.manual_blocked_candidates|default:"0" }}
+                </div>
+            {% endif %}
+
+            {% if job.recent_events %}
+                <div style="margin-top:14px; padding-top:12px; border-top:1px solid #e5e7eb;">
+                    <strong style="font-size:14px;">Последние события</strong>
+                    <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+                        {% for event in job.recent_events %}
+                            <div style="padding:10px 12px; border-radius:10px; background:#fafafa; border:1px solid #ececec; font-size:13px;">
+                                <div style="color:#6b7280;">{{ event.timestamp }}</div>
+                                <div>{{ event.label }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if job.error_text %}
+                <div style="margin-top:14px; padding:10px 12px; border-radius:10px; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; font-size:14px;">
+                    {{ job.error_text }}
+                </div>
+            {% endif %}
+
+            {% if job.status == "running" or job.status == "pending" %}
+                <div style="margin-top:14px; color:#6b7280; font-size:13px;">
+                    Статус обновляется автоматически через HTMX.
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="card" style="padding:16px; color:#6b7280;">
+            Запусков пока нет. Стартуйте пайплайн из формы выше.
+        </div>
+    {% endif %}
+</div>
